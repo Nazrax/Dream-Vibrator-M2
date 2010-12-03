@@ -4,3 +4,7 @@
 *.d
 .emacs
 *~
+.#*
+*.out
+*.map
+*.lst
