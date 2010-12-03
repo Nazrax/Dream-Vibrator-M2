@@ -1,10 +1,14 @@
 #include "globals.h"
 #include "serial.h"
 #include "clock.h"
+#include "power.h"
+#include "accel.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+
+#include <stdio.h>
 
 // Function prototypes
 void init_io(void);
@@ -30,22 +34,31 @@ int main(int argc, char** argv) {
 
   sei();
 
-  strcpy_P(serial_out, PSTR("\r\nScanning\r\n"));
+  strcpy_P(serial_out, PSTR("\r\nInitializing accelerometer\r\n"));
   usart_send();
   while (flag_serial_sending);
-  // Put accelerometer in SPI mode
+  accel_init();
   strcpy_P(serial_out, PSTR("Ready\r\n"));
 
   while(true) {
     if (flag_want_reading) {
-      // Get readings from accelerometer
-      // Print them
+      uint32_t reading;
+      uint8_t x,y,z;
+
+      reading = accel_read();
+      x = reading >> 16;
+      y = (reading >> 8) & 0xff;
+      z = reading & 0xff;
+
+      sprintf(serial_out, "X: %d Y: %d Z: %d\n", x, y, z);
+      usart_send();
 
       flag_want_reading = false;
     }
 
     clock_update();
-    // Sleep
+
+    power_sleep();
   }
 
   return 0;

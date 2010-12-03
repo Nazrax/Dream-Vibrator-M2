@@ -1,6 +1,8 @@
 #include "globals.h"
 #include "clock.h"
 
+#include <avr/interrupt.h>
+
 volatile uint32_t clock_ticks;
 clock_t clock;
 
