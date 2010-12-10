@@ -3,10 +3,12 @@
 #include "clock.h"
 #include "power.h"
 #include "accel.h"
+#include "spi.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/delay.h>
 
 #include <stdio.h>
 
@@ -17,40 +19,65 @@ void init_usart(void);
 void DoCalibrate(void);
 
 void init_io() {
-  DDRB = _BV(DDB2); // Set SS as output
+  DDRB |= _BV(DDB2); // Set SS as output
 }
 
-
 int main(int argc, char** argv) {
+  int i;
   CLKPR = (1<<CLKPCE);        // set Clock Prescaler Change Enable
   CLKPR = _BV(CLKPS0); // Divide by 2, 4 MHz
+
+  DDRB=_BV(DDB0);
+  PORTB=_BV(PORTB0);
+
+  _delay_ms(1000);
+
   DoCalibrate();
+  PORTB = 0;
 
   init_io();
+  usart_init();
   clock_init();
+  spi_init();
 
   PCICR = _BV(PCIE1) | _BV(PCIE2); // Enable pin change interrupts
   PCMSK2 |= _BV(PCINT16); // Enable pin change interrupt on USART RX
 
   sei();
 
-  strcpy_P(serial_out, PSTR("\r\nInitializing accelerometer\r\n"));
+  strcpy_P(serial_out, PSTR("\r\nInitializing accelerometer\r\n\0"));
+  usart_send();
+  while (flag_serial_sending);
+  strcpy_P(serial_out, PSTR("\r\n(foo)\r\n\0"));
   usart_send();
   while (flag_serial_sending);
   accel_init();
   strcpy_P(serial_out, PSTR("Ready\r\n"));
+  usart_send();
 
+  for(i=6; i<=0x16; i++) {
+    accel_select();
+    spi_send(i << 1);
+    uint8_t x = spi_send(0);
+    accel_deselect();
+    sprintf(serial_out, "%d: %d\r\n", i, x);
+    usart_send();
+    while (flag_serial_sending);
+  }
+
+  //while(true);
+  
   while(true) {
     if (flag_want_reading) {
       uint32_t reading;
-      uint8_t x,y,z;
+      int8_t x,y,z;
 
       reading = accel_read();
       x = reading >> 16;
       y = (reading >> 8) & 0xff;
       z = reading & 0xff;
 
-      sprintf(serial_out, "X: %d Y: %d Z: %d\n", x, y, z);
+      sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
       usart_send();
 
       flag_want_reading = false;
@@ -63,7 +90,4 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-
-
-
 
