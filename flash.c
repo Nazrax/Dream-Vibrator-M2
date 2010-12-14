@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include <avr/wdt.h>
+#include <avr/pgmspace.h>
 
 #define flash_unprotect() PORTB |= _BV(PORTB0)
 #define flash_protect() PORTB &= ~(_BV(PORTB0))
@@ -18,6 +19,8 @@ volatile uint16_t flash_buf_ctr;
 void flash_enable_write(void);
 void flash_wait_for_wel(void);
 uint8_t flash_status(void);
+void flash_wait_for_idle(void);
+bool_t flash_busy(void);
 
 void flash_init(void) {
   DDRD |= _BV(DDD3) | _BV(DDD5); // /CS & /HOLD
@@ -28,6 +31,30 @@ void flash_init(void) {
   flash_unprotect();
   flash_powerdown();
   flash_protect();
+}
+
+void flash_doheader() {
+  if (flag_want_header) {
+    flash_buf[0] = 0xFF;
+    flash_buf[1] = 0xEE;
+    flash_buf[2] = clock.hours;
+    flash_buf[3] = 0;
+    flash_buf[4] = clock.minutes;
+    flash_buf[5] = 0;
+    flash_buf[6] = clock.seconds;
+    flash_buf_ctr = 7;
+    flag_want_header = false;
+  }
+}
+
+void flash_condwrite() {
+  if (flash_buf_ctr > 253) { // Leave room for 3 byte writes
+      strcpy_P(serial_out, PSTR("\r\nSaving to flash\r\n"));
+      usart_send();
+      while (flag_serial_sending);
+    flash_write(flash_addr++);
+    flash_buf_ctr = 0;
+  }
 }
 
 uint8_t flash_status(void) {

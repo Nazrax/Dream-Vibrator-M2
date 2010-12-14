@@ -25,6 +25,10 @@ void accel_take_reading() {
     x = accel_read(0);
     y = accel_read(1);
     z = accel_read(2);
+
+    flash_buf[flash_buf_ctr++] = x;
+    flash_buf[flash_buf_ctr++] = y;
+    flash_buf[flash_buf_ctr++] = z;
     
     sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
     usart_send();

@@ -24,7 +24,7 @@ void init_io() {
 }
 
 int main(int argc, char** argv) {
-  int i;
+  //int i;
   CLKPR = (1<<CLKPCE);        // set Clock Prescaler Change Enable
   CLKPR = _BV(CLKPS0); // Divide by 2, 4 MHz
 
@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
   strcpy_P(serial_out, PSTR("Ready\r\n"));
   usart_send();
 
+  /*
   for(i=6; i<=0x16; i++) {
     accel_select();
     spi_send(i << 1);
@@ -73,11 +74,15 @@ int main(int argc, char** argv) {
     usart_send();
     while (flag_serial_sending);
   }
+  */
+
 
   while(true) {
     clock_update();
 
+    flash_doheader();
     accel_take_reading();
+    flash_condwrite();
     usart_dostuff();
 
     power_sleep();

@@ -39,6 +39,6 @@ void clock_update() {
 ISR(TIMER2_COMPA_vect) {
   clock_ticks++;
   clock.subseconds++;
-  if (clock_ticks % 2 == 0)
+  if (clock_ticks % 2 == 0) // At 16 clock ticks/second, read 8 time/second
     flag_want_reading = true;
 }

@@ -28,13 +28,14 @@
 #define flash_powerdown() flash_select();spi_send(INSTR_POWERDOWN);flash_deselect();
 #define flash_powerup() flash_select();spi_send(INSTR_POWERUP);flash_deselect();
 
+#define flash_full() (flash_addr > 4095)
+
 void flash_init(void);
-void flash_wait_for_idle(void);
+void flash_doheader(void);
+void flash_condwrite(void);
 void flash_erase(void);
 void flash_write(uint16_t);
 void flash_read(uint16_t);
-bool_t flash_busy(void);
 void flash_scan(void);
-uint8_t flash_status(void);
 
 #endif // _FLASH_H_
