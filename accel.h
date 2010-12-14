@@ -4,7 +4,8 @@
 #define accel_select() PORTD &= ~(_BV(PORTD4))
 #define accel_deselect() PORTD |= _BV(PORTD4)
 
-uint32_t accel_read(void);
 void accel_init(void);
+uint32_t accel_read(void);
+void accel_take_reading(void);
 
 #endif

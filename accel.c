@@ -5,6 +5,8 @@
 
 #include <util/delay.h>
 
+#include <stdio.h>
+
 #define XOUT8_REGISTER 0x06
 #define YOUT8_REGISTER 0x07
 #define ZOUT8_REGISTER 0x08
@@ -15,6 +17,23 @@
 #define read_addr(x) (x << 1)
 
 int8_t x_arry[5], y_arry[5], z_arry[5];
+
+void accel_take_reading() {
+  if (flag_want_reading) {
+    uint32_t reading;
+    int8_t x,y,z;
+
+    reading = accel_read();
+    x = reading >> 16;
+    y = (reading >> 8) & 0xff;
+    z = reading & 0xff;
+
+    sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
+    usart_send();
+
+    flag_want_reading = false;
+  }
+}
 
 void accel_init() {
   DDRD |= _BV(DDD4); // !CS
@@ -34,20 +53,10 @@ void accel_init() {
   
 }
 
-uint32_t accel_read2() {
-  uint32_t x,y,z;
-
-  x = 1;
-  y = 2;
-  z = 3;
-
-  return (x << 16) + (y << 8) + z;
-}
-
 uint32_t accel_read() {
   uint32_t x,y,z;
-  uint8_t i;
-  uint32_t xa = 0, ya = 0, za = 0;
+  //uint8_t i;
+  //uint32_t xa = 0, ya = 0, za = 0;
 
   accel_select();
   spi_send(read_addr(XOUT8_REGISTER));

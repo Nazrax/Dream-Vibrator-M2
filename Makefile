@@ -29,7 +29,7 @@ PROJECTNAME=accelerometer_test
 # (list all files to compile, e.g. 'a.c b.cpp as.S'):
 # Use .cc, .cpp or .C suffix for C++ files, use .S 
 # (NOT .s !!!) for assembly source code files.
-PRJSRC=main.c calib_32kHz.c clock.c serial.c accel.c spi.c power.c
+PRJSRC=main.c calib_32kHz.c clock.c serial.c accel.c spi.c power.c flash.c
 
 # additional includes (e.g. -I/path/to/mydir)
 #INC=-I/path/to/include
@@ -84,7 +84,7 @@ HEXFORMAT=ihex
 CFLAGS=-I. $(INC) -g -mmcu=$(MCU) -O$(OPTLEVEL) \
 	-fpack-struct -fshort-enums             \
 	-funsigned-bitfields -funsigned-char    \
-	-Wall -Wstrict-prototypes               \
+	-Wall -Werror -Wstrict-prototypes       \
 	-Wa,-ahlms=$(firstword                  \
 	$(filter %.lst, $(<:.c=.lst)))
 

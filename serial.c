@@ -2,7 +2,7 @@
 #include "serial.h"
 
 #include <avr/interrupt.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 volatile char serial_in[64];
 char serial_out[132];
@@ -29,6 +29,10 @@ void usart_send_next_byte(void) {
   } else {
     flag_serial_sending = false;
   }
+}
+
+void usart_dostuff() {
+
 }
 
 void usart_reset_output(void) {
