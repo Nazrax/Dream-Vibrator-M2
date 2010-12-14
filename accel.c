@@ -13,21 +13,19 @@
 #define MODE_REGISTER 0x16
 #define I2C_ADDRESS_REGISTER 0x0d
 
-#define write_addr(x) ( (1<<7 ) | (x << 1))
-#define read_addr(x) (x << 1)
+#define write_addr(x) ( (1<<7 ) | ((x) << 1))
+#define read_addr(x) ((x) << 1)
 
 int8_t x_arry[5], y_arry[5], z_arry[5];
 
 void accel_take_reading() {
   if (flag_want_reading) {
-    uint32_t reading;
     int8_t x,y,z;
-
-    reading = accel_read();
-    x = reading >> 16;
-    y = (reading >> 8) & 0xff;
-    z = reading & 0xff;
-
+   
+    x = accel_read(0);
+    y = accel_read(1);
+    z = accel_read(2);
+    
     sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
     usart_send();
 
@@ -53,48 +51,14 @@ void accel_init() {
   
 }
 
-uint32_t accel_read() {
-  uint32_t x,y,z;
-  //uint8_t i;
-  //uint32_t xa = 0, ya = 0, za = 0;
+int8_t accel_read(uint8_t i) {
+  int8_t reading;
 
   accel_select();
-  spi_send(read_addr(XOUT8_REGISTER));
-  x = spi_send(DONTCARE);
+  spi_send(read_addr(XOUT8_REGISTER + i));
+  reading = (int8_t)spi_send(DONTCARE);
   accel_deselect();
 
-
-  accel_select();
-  spi_send(read_addr(YOUT8_REGISTER));
-  y = spi_send(DONTCARE);
-  accel_deselect();
-
-
-  accel_select();
-  spi_send(read_addr(ZOUT8_REGISTER));
-  z = spi_send(DONTCARE);
-  accel_deselect();
-
-  /*
-  for(i=1; i<5; i++) {
-    x_arry[i] = x_arry[i-1];
-    y_arry[i] = y_arry[i-1];
-    z_arry[i] = z_arry[i-1];
-  }
-
-  x_arry[0] = x;
-  y_arry[0] = y;
-  z_arry[0] = z;
-
-  for(i=0; i<5; i++) {
-    xa += x_arry[i];
-    ya += y_arry[i];
-    za += z_arry[i];
-  }
-  xa /= 5;
-  ya /= 5;
-  za /= 5;
-  */
-  return (x << 16) | (y << 8) | z;
+  return reading;
 }
 
