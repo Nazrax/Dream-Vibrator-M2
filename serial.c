@@ -113,9 +113,6 @@ ISR(USART_TX_vect) {
 }
 
 ISR(USART_RX_vect) {
-    PORTD ^= _BV(PORTD7);
-    _delay_ms(50);
-
   char chr = UDR0;
 //flag_user_active = true;
  //last_activity = clock_ticks;

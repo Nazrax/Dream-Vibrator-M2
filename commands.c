@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "commands.h"
 #include "serial.h"
+#include "flash.h"
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -12,7 +13,7 @@ const char on[] PROGMEM = ": on";
 const char off[] PROGMEM = ": off";
 const char prompt[] PROGMEM = "\r\n> ";
 const char badinput[] PROGMEM = "\r\nBad input";
-const char executed[] PROGMEM = "\r\nCommand executed";
+const char executed[] PROGMEM = "\r\nCommand executed: ";
 const char cmdresult[] PROGMEM = "\r\nResult:";
 const char youentered[] PROGMEM = "\r\nYou entered:";
 const char timeisnow[] PROGMEM = "\r\nThe time is now: ";
@@ -34,6 +35,18 @@ void handle_command() {
     handle_accelverb();
   } else if (!strncmp_P((char*)serial_in, PSTR("ACCEL"), 5)) {
     handle_accel();
+    p += strlcpy_P(p, off, 64);
+  } else if (!strncmp_P((char*)serial_in, PSTR("SCAN"), 4)) {
+    flash_scan();
+    p += strlcpy_P(p, cmdresult, 64);
+    p += sprintf(p, " %03d %03d", flash_addr >> 8, flash_addr & 0xFF);
+  } else if (!strncmp_P((char*)serial_in, PSTR("ADDR"), 4)) {
+    p += strlcpy_P(p, cmdresult, 64);
+    p += sprintf(p, " %03d %03d", flash_addr >> 8, flash_addr & 0xFF);
+  } else if (!strncmp_P((char*)serial_in, PSTR("ERASE"), 5)) {
+    flash_erase();
+    p += strlcpy_P(p, executed, 64);
+    p += strlcpy_P(p, PSTR(" Erase"), 64);
   } else if (strlen((char*)serial_in) == 0) {
     // Do nothing
   } else {
@@ -63,7 +76,7 @@ static void handle_time() {
     clock.seconds = (serial_in[8] - '0') * 10 + (serial_in[9] - '0');
  
     p += strlcpy_P(p, executed, 64);
-    p += strlcpy_P(p, PSTR("Clock"), 64);
+    p += strlcpy_P(p, PSTR("TIME"), 64);
   } else {
     p += strlcpy_P(p, badinput, 64);
   }
@@ -72,7 +85,7 @@ static void handle_time() {
 static void handle_accelverb() {
   flag_accel_verbose = !flag_accel_verbose;
   p += strlcpy_P(p, executed, 64);
-  p += strlcpy_P(p, PSTR(" ACCEL verbose"), 64);
+  p += strlcpy_P(p, PSTR("ACCEL verbose"), 64);
   if (flag_accel_verbose)
     p += strlcpy_P(p, on, 64);
   else
@@ -82,7 +95,7 @@ static void handle_accelverb() {
 static void handle_accel() {
   flag_accel_enabled = !flag_accel_enabled;
   p += strlcpy_P(p, executed, 64);
-  p += strlcpy_P(p, PSTR(" ACCEL"), 64);
+  p += strlcpy_P(p, PSTR("ACCEL"), 64);
   if (flag_accel_enabled)
     p += strlcpy_P(p, on, 64);
   else

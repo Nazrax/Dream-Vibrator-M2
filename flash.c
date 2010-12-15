@@ -11,6 +11,7 @@
 #define flash_protect() PORTB &= ~(_BV(PORTB0))
 
 #define flash_unhold() PORTD |= _BV(PORTD5)
+#define flash_hold() PORTD &= ~(_BV(PORTD5));
 
 uint8_t flash_buf[256];
 uint16_t flash_addr;
@@ -27,10 +28,9 @@ void flash_init(void) {
   DDRB |= _BV(DDB0); // /WP
 
   flash_unhold();
-
+  
   flash_unprotect();
   flash_powerdown();
-  flash_protect();
 }
 
 void flash_doheader() {

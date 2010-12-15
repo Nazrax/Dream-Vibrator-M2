@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   usart_send();
   while (flag_serial_sending);
 
-  strcpy_P(serial_out, PSTR("Ready\r\n"));
+  strcpy_P(serial_out, PSTR("Ready, scanning\r\n"));
   usart_send();
 
   flag_accel_enabled = true;
