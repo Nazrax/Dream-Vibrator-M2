@@ -11,6 +11,7 @@ uint8_t spi_send(uint8_t data) {
   usart_send();
   while(flag_serial_sending);
   */
+  //PORTD ^= _BV(PORTD7);
 
   SPDR = data;
   while (!(SPSR & _BV(SPIF)));

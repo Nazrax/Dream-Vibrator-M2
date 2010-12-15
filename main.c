@@ -32,21 +32,18 @@ int main(int argc, char** argv) {
   PORTD = _BV(PORTD7);
 
   _delay_ms(1000);
-
+  
   DoCalibrate();
   PORTD &= ~(_BV(PORTD7));
-
+  
   init_io();
   usart_init();
   clock_init();
   spi_init();
   flash_init();
-
-  PCICR = _BV(PCIE1) | _BV(PCIE2); // Enable pin change interrupts
-  PCMSK2 |= _BV(PCINT16); // Enable pin change interrupt on USART RX
-
+  
   sei();
-
+  
   strcpy_P(serial_out, PSTR("\r\nInitializing accelerometer\r\n"));
   usart_send();
   while (flag_serial_sending);
@@ -64,20 +61,10 @@ int main(int argc, char** argv) {
   strcpy_P(serial_out, PSTR("Ready\r\n"));
   usart_send();
 
-  /*
-  for(i=6; i<=0x16; i++) {
-    accel_select();
-    spi_send(i << 1);
-    uint8_t x = spi_send(0);
-    accel_deselect();
-    sprintf(serial_out, "%d: %d\r\n", i, x);
-    usart_send();
-    while (flag_serial_sending);
-  }
-  */
-
+  flag_accel_enabled = true;
 
   while(true) {
+
     clock_update();
 
     flash_doheader();
@@ -86,6 +73,7 @@ int main(int argc, char** argv) {
     usart_dostuff();
 
     power_sleep();
+
   } // while(true)
 
   return 0;

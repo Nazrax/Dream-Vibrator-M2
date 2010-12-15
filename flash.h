@@ -28,7 +28,7 @@
 #define flash_powerdown() flash_select();spi_send(INSTR_POWERDOWN);flash_deselect();
 #define flash_powerup() flash_select();spi_send(INSTR_POWERUP);flash_deselect();
 
-#define flash_full() (flash_addr > 4095)
+#define flash_full() (flash_addr > 4093)
 
 void flash_init(void);
 void flash_doheader(void);

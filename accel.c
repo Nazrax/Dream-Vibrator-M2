@@ -19,7 +19,7 @@
 int8_t x_arry[5], y_arry[5], z_arry[5];
 
 void accel_take_reading() {
-  if (flag_want_reading) {
+  if (flag_want_reading && flag_accel_enabled) {
     int8_t x,y,z;
    
     x = accel_read(0);
@@ -30,8 +30,10 @@ void accel_take_reading() {
     flash_buf[flash_buf_ctr++] = y;
     flash_buf[flash_buf_ctr++] = z;
     
-    sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
-    usart_send();
+    if (flag_accel_verbose) {
+      sprintf(serial_out, "X: %d Y: %d Z: %d\r\n", x, y, z);
+      usart_send();
+    }
 
     flag_want_reading = false;
   }

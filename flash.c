@@ -37,21 +37,22 @@ void flash_doheader() {
   if (flag_want_header) {
     flash_buf[0] = 0xFF;
     flash_buf[1] = 0xEE;
-    flash_buf[2] = clock.hours;
-    flash_buf[3] = 0;
+    flash_buf[2] = 0;
+    flash_buf[3] = clock.hours;
     flash_buf[4] = clock.minutes;
-    flash_buf[5] = 0;
-    flash_buf[6] = clock.seconds;
-    flash_buf_ctr = 7;
+    flash_buf[5] = clock.seconds;
+    flash_buf_ctr = 6;
     flag_want_header = false;
   }
 }
 
 void flash_condwrite() {
   if (flash_buf_ctr > 253) { // Leave room for 3 byte writes
+    if (flag_accel_verbose) {
       strcpy_P(serial_out, PSTR("\r\nSaving to flash\r\n"));
       usart_send();
       while (flag_serial_sending);
+    }
     flash_write(flash_addr++);
     flash_buf_ctr = 0;
   }
