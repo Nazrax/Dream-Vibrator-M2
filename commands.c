@@ -2,6 +2,7 @@
 #include "commands.h"
 #include "serial.h"
 #include "flash.h"
+#include "accel.h"
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -24,6 +25,7 @@ static char* p;
 static void handle_time(void);
 static void handle_accelverb(void);
 static void handle_accel(void);
+static void handle_spi(void);
 
 void handle_command() {
   serial_in[serial_in_ctr] = '\0';
@@ -47,6 +49,24 @@ void handle_command() {
     flash_erase();
     p += strlcpy_P(p, executed, 64);
     p += strlcpy_P(p, PSTR(" Erase"), 64);
+  } else if (!strncmp_P((char*)serial_in, PSTR("SPI"), 3)) {
+    handle_spi();
+  } else if (!strncmp_P((char*)serial_in, PSTR("SELA"), 4)) {
+    accel_select();
+    p += strlcpy_P(p, cmdresult, 64);
+    p += strlcpy_P(p, PSTR("Accel Selected"), 64);
+  } else if (!strncmp_P((char*)serial_in, PSTR("SELF"), 4)) {
+    flash_select();
+    p += strlcpy_P(p, cmdresult, 64);
+    p += strlcpy_P(p, PSTR("Flash Selected"), 64);
+  } else if (!strncmp_P((char*)serial_in, PSTR("DSELA"), 5)) {
+    accel_deselect();
+    p += strlcpy_P(p, cmdresult, 64);
+    p += strlcpy_P(p, PSTR("Accel Deselected"), 64);
+  } else if (!strncmp_P((char*)serial_in, PSTR("DSELF"), 5)) {
+    flash_deselect();
+    p += strlcpy_P(p, cmdresult, 64);
+    p += strlcpy_P(p, PSTR("Flash Deselected"), 64);
   } else if (strlen((char*)serial_in) == 0) {
     // Do nothing
   } else {
@@ -81,6 +101,20 @@ static void handle_time() {
     p += strlcpy_P(p, badinput, 64);
   }
 }
+
+static void handle_spi() {
+  int i;
+
+  strlcpy_P(p, cmdresult, 64);
+  for(i=1; (i*3)+2<serial_in_ctr; i++) {
+    uint8_t j = i * 3;
+    uint8_t x = (serial_in[j] - '0') * 100 + (serial_in[j+1] - '0') * 10 + (serial_in[j+2]-'0');
+    uint8_t result = spi_send(x);
+      
+    p += sprintf(p, "{%03d : %03d} ", x, result);
+  }
+}
+
 
 static void handle_accelverb() {
   flag_accel_verbose = !flag_accel_verbose;
