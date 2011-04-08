@@ -28,14 +28,15 @@ int main(int argc, char** argv) {
   CLKPR = (1<<CLKPCE);        // set Clock Prescaler Change Enable
   CLKPR = _BV(CLKPS0); // Divide by 2, 4 MHz
 
-  DDRD |= _BV(DDD7);
-  PORTD = _BV(PORTD7);
+  DDRB |= _BV(DDB1);
+  PORTB = _BV(PORTB1);
 
-  _delay_ms(1000);
+  _delay_ms(500);
   
   DoCalibrate();
-  PORTD &= ~(_BV(PORTD7));
-  
+
+  PORTB &= ~(_BV(PORTB1));
+
   init_io();
   usart_init();
   clock_init();
