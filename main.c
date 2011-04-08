@@ -24,7 +24,7 @@ void init_io() {
 }
 
 int main(int argc, char** argv) {
-  //int i;
+  int i;
   CLKPR = (1<<CLKPCE);        // set Clock Prescaler Change Enable
   CLKPR = _BV(CLKPS0); // Divide by 2, 4 MHz
 
@@ -50,19 +50,37 @@ int main(int argc, char** argv) {
   while (flag_serial_sending);
   accel_init();
 
-  strcpy_P(serial_out, PSTR("\r\nScanning Flash\r\n"));
+  strcpy_P(serial_out, PSTR("\r\nSleeping for 5 seconds\r\n"));
   usart_send();
   while (flag_serial_sending);
-  flash_scan();
+  _delay_ms(5000);
 
-  sprintf(serial_out, "Flash address: %d\r\n", flash_addr);
-  usart_send();
-  while (flag_serial_sending);
+  for(i=0; i<5; i++) {
+    strcpy_P(serial_out, PSTR("\r\nScanning Flash\r\n"));
+    usart_send();
+    while (flag_serial_sending);
+    flash_scan();
 
-  strcpy_P(serial_out, PSTR("Ready, scanning\r\n"));
+    sprintf(serial_out, "Flash address: %d\r\n", flash_addr);
+    usart_send();
+    while (flag_serial_sending);
+
+    if (flash_addr < 4096)
+      break;
+
+    strcpy_P(serial_out, PSTR("\r\nFlash claims to be full, trying again ...\r\n"));
+    usart_send();
+    while (flag_serial_sending);
+
+    _delay_ms(1000);
+  }
+    
+
+  strcpy_P(serial_out, PSTR("Ready\r\n"));
   usart_send();
 
   flag_accel_enabled = true;
+  flag_accel_verbose = true;
 
   while(true) {
 
