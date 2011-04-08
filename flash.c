@@ -41,7 +41,8 @@ void flash_doheader() {
     flash_buf[3] = clock.hours;
     flash_buf[4] = clock.minutes;
     flash_buf[5] = clock.seconds;
-    flash_buf_ctr = 6;
+    flash_buf[6] = 0;
+    flash_buf_ctr = 7;
     flag_want_header = false;
   }
 }
@@ -49,12 +50,13 @@ void flash_doheader() {
 void flash_condwrite() {
   if (flash_buf_ctr > 253) { // Leave room for 3 byte writes
     if (flag_accel_verbose) {
-      strcpy_P(serial_out, PSTR("\r\nSaving to flash\r\n"));
+      sprintf(serial_out, "\r\nSaving to flash at %d %ld\r\n", flash_addr, clock_ticks);
       usart_send();
       while (flag_serial_sending);
     }
     flash_write(flash_addr++);
     flash_buf_ctr = 0;
+    flag_want_header = true;
   }
 }
 
