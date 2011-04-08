@@ -49,6 +49,25 @@ void flash_doheader() {
 
 void flash_condwrite() {
   if (flash_buf_ctr > 253) { // Leave room for 3 byte writes
+    uint8_t i;
+    bool_t nonzero = false;
+    for(i=8; i<flash_buf_ctr; i++) {
+      if (flash_buf[i] != 0) {
+        nonzero = true;
+        break;
+      }
+    }
+
+    // Accelerometer isn't reading, so get the WDT to reboot us
+    if (!nonzero) {
+      strcpy_P(serial_out, PSTR("\r\nBad accelerometer data, rebooting ...\r\n"));
+      usart_send();
+      while (flag_serial_sending);
+
+      wdt_enable(WDTO_15MS);
+      while(1) {}
+    }
+
     if (flag_accel_verbose) {
       sprintf(serial_out, "\r\nSaving to flash at %d %ld\r\n", flash_addr, clock_ticks);
       usart_send();

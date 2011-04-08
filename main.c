@@ -25,6 +25,11 @@ void init_io() {
 
 int main(int argc, char** argv) {
   int i;
+  //uint8_t old_mcusr = MCUSR;
+
+  MCUSR = 0;
+  wdt_disable();
+
   CLKPR = (1<<CLKPCE);        // set Clock Prescaler Change Enable
   CLKPR = _BV(CLKPS0); // Divide by 2, 4 MHz
 
@@ -33,6 +38,8 @@ int main(int argc, char** argv) {
 
   _delay_ms(500);
   
+  wdt_enable(WDTO_8S);
+
   DoCalibrate();
 
   PORTB &= ~(_BV(PORTB1));
@@ -91,8 +98,9 @@ int main(int argc, char** argv) {
     flash_condwrite();
     usart_dostuff();
 
+    wdt_reset();
     power_sleep();
-
+    wdt_reset();
   } // while(true)
 
   return 0;
