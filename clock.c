@@ -16,7 +16,7 @@ void clock_init() {
 }
 
 void clock_update() {
-  if (clock.subseconds > 15) { // TODO: This should really be a while loop
+  while (clock.subseconds > 15) {
     clock.subseconds -= 16;
     clock.seconds++;
     
